@@ -440,7 +440,7 @@ curl http://localhost:8080/orders
 ## 👨‍💻 Autor
 
 **Nome**: Tiago Bernardo Santos  
-**Curso**: Banco de Dados
+**Curso**: Banco de Dados   
 **Instituição**: FATEC São José dos Campos - Prof. Jessen Vidal
 
 ---
