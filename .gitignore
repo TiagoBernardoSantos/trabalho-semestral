@@ -1,0 +1,15 @@
+# Pasta gerada pelo Maven
+/target/
+
+# Logs
+*.log
+
+# Arquivos temporários do IDE
+*.idea/
+*.iml
+*.classpath
+*.project
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
