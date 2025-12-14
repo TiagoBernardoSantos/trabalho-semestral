@@ -1,74 +1,82 @@
 # 🛒 Shopping Cart REST API
 
-API REST desenvolvida em **Java puro** para gerenciamento de carrinho de compras, implementando os 4 pilares da Orientação a Objetos.
+API REST desenvolvida em **Java puro (sem frameworks)** para gerenciamento de pedidos e itens de um carrinho de compras, atendendo aos requisitos do **Trabalho Semestral** e aplicando os **4 pilares da Orientação a Objetos**.
 
 ---
 
 ## 📋 Informações do Projeto
 
-- **Disciplina**: Linguagem de Programação 2
-- **Aluno**: Tiago Bernardo Santos
-- **Linguagem**: Java 21 (OpenJDK)
-- **Banco de Dados**: H2 Database (Embedded)
-- **Arquitetura**: REST API sem frameworks
+* **Disciplina**: Linguagem de Programação 2
+* **Aluno**: Tiago Bernardo Santos
+* **Curso**: Banco de Dados
+* **Instituição**: FATEC São José dos Campos – Prof. Jessen Vidal
+* **Linguagem**: Java 21 (OpenJDK / Temurin)
+* **Banco de Dados**: H2 Database (Embedded / In-Memory)
+* **Arquitetura**: REST API sem uso de frameworks (Spring, Quarkus, etc.)
+* **Build Tool**: Maven
 
 ---
 
-## 🎯 Conceitos de OOP Implementados
+## 🎯 Objetivo do Projeto
 
-### 1️⃣ **Abstração**
-**Onde**: Classes `Order` e `OrderItem`  
-**O que**: Representam entidades do mundo real (pedido e item)  
-**Arquivo**: `src/main/java/com/projeto/model/Order.java`
+Desenvolver uma **REST API em Java puro** que implemente:
+
+* CRUD completo de **duas entidades**
+* Relacionamento **1:N (One-To-Many)**
+* Persistência em **banco de dados embarcado**
+* Aplicação clara dos conceitos de **Abstração, Encapsulamento, Herança e Polimorfismo**
+* Código organizado, modular e de fácil manutenção
+
+---
+
+## 🧠 Conceitos de Orientação a Objetos Aplicados
+
+### 1️⃣ Abstração
+
+**Onde:** `Order` e `OrderItem`
+**O que:** Representam entidades do mundo real (Pedido e Item do Pedido)
 
 ```java
 public class Order extends BaseEntity {
     private String customerName;
     private Double totalValue;
-    private List<OrderItem> items;
-    // Representa um pedido real do mundo
+    private String status;
 }
 ```
 
 ---
 
-### 2️⃣ **Encapsulamento**
-**Onde**: Atributos privados com validações  
-**O que**: Dados protegidos com getters/setters e validações  
-**Arquivo**: `src/main/java/com/projeto/model/OrderItem.java`
+### 2️⃣ Encapsulamento
+
+**Onde:** Atributos privados + getters/setters com validação
 
 ```java
 public void setQuantity(Integer quantity) {
     if (quantity == null || quantity <= 0) {
         throw new IllegalArgumentException("Quantidade deve ser maior que zero");
     }
-    this.quantity = quantity; // Validação protege dados
+    this.quantity = quantity;
 }
 ```
 
 ---
 
-### 3️⃣ **Herança**
-**Onde**: `Order` e `OrderItem` herdam de `BaseEntity`  
-**O que**: Classes filhas herdam `id` e `createdAt`  
-**Arquivo**: `src/main/java/com/projeto/model/BaseEntity.java`
+### 3️⃣ Herança
+
+**Onde:** `Order` e `OrderItem` herdam de `BaseEntity`
 
 ```java
 public abstract class BaseEntity {
     protected Long id;
     protected LocalDateTime createdAt;
 }
-
-public class Order extends BaseEntity { /* herda id e createdAt */ }
-public class OrderItem extends BaseEntity { /* herda id e createdAt */ }
 ```
 
 ---
 
-### 4️⃣ **Polimorfismo**
-**Onde**: Interface `OrderService` e implementação `OrderServiceImpl`  
-**O que**: Mesmo método, diferentes implementações possíveis  
-**Arquivo**: `src/main/java/com/projeto/service/`
+### 4️⃣ Polimorfismo
+
+**Onde:** Interface `OrderService` e implementação `OrderServiceImpl`
 
 ```java
 public interface OrderService {
@@ -78,377 +86,197 @@ public interface OrderService {
 public class OrderServiceImpl implements OrderService {
     @Override
     public Order createOrder(String customerName) throws SQLException {
-        // Implementação específica
+        // implementação concreta
     }
 }
 ```
 
 ---
 
-## 📊 Relacionamento das Entidades (1:N)
+## 🔗 Relacionamento entre Entidades (1:N)
 
 ```
-┌─────────────────────┐           ┌──────────────────────┐
-│   Order (Pedido)    │ 1 ─────► N│  OrderItem (Item)    │
-├─────────────────────┤           ├──────────────────────┤
-│ id (PK)             │           │ id (PK)              │
-│ customerName        │           │ orderId (FK) ◄───────┤
-│ totalValue          │           │ product              │
-│ status              │           │ quantity             │
-│ createdAt           │           │ unitPrice            │
-│ items: List         │           │ createdAt            │
-└─────────────────────┘           └──────────────────────┘
+Order (Pedido) 1 ─────► N OrderItem (Itens)
 ```
 
-**SQL:**
+* Um **pedido** pode possuir **vários itens**
+* Cada **item pertence a um único pedido**
+
 ```sql
 FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
 ```
-
-**Um pedido pode ter vários itens**  
-**Cada item pertence a apenas um pedido**
 
 ---
 
 ## 🗂️ Estrutura do Projeto
 
 ```
-shopping-cart-api/
-├── pom.xml                                    # Configuração Maven
-├── README.md                                  # Este arquivo
+trabalho-semestral/
+├── pom.xml
+├── README.md
 └── src/main/java/com/projeto/
-    ├── Main.java                              # ⭐ Inicialização do servidor
+    ├── Main.java                  # Inicialização da aplicação
     │
-    ├── model/                                 # 🎯 ABSTRAÇÃO + HERANÇA + ENCAPSULAMENTO
-    │   ├── BaseEntity.java                    # Classe PAI
-    │   ├── Order.java                         # Entidade Pedido
-    │   └── OrderItem.java                     # Entidade Item
+    ├── routes/                    # Configuração centralizada de rotas
+    │   └── Routes.java
     │
-    ├── repository/                            # 💾 CRUD - Acesso ao Banco
-    │   ├── OrderRepository.java               # CRUD de Orders
-    │   └── OrderItemRepository.java           # CRUD de Items
+    ├── controller/                # Camada de controle (HTTP)
+    │   ├── OrderController.java
+    │   └── OrderItemController.java
     │
-    ├── service/                               # 🧠 LÓGICA DE NEGÓCIO + POLIMORFISMO
-    │   ├── OrderService.java                  # Interface (contrato)
-    │   └── OrderServiceImpl.java              # Implementação
+    ├── service/                   # Regras de negócio
+    │   ├── OrderService.java
+    │   └── OrderServiceImpl.java
     │
-    ├── controller/                            # 🌐 REST API ENDPOINTS
-    │   ├── OrderController.java               # Endpoints de Orders
-    │   └── OrderItemController.java           # Endpoints de Items
+    ├── repository/                # Acesso ao banco (CRUD)
+    │   ├── OrderRepository.java
+    │   └── OrderItemRepository.java
     │
-    └── database/                              # 🗄️ CONFIGURAÇÃO H2
-        └── DatabaseConnection.java            # Conexão e criação de tabelas
-```
-
----
-
-## 🔧 Pré-requisitos
-
-Certifique-se de ter instalado:
-
-- **Java JDK 17+** (OpenJDK recomendado)
-  - Verificar: `java -version`
-- **Maven 3.8+**
-  - Verificar: `mvn -version`
-- **Git** (para clonar o repositório)
-- **Postman ou Insomnia** (opcional, para testar endpoints)
-
----
-
-## 🚀 Como Compilar e Executar
-
-### 1️⃣ Clonar o Repositório
-
-```bash
-git clone 
-cd shopping-cart-api
-```
-
-### 2️⃣ Compilar o Projeto
-
-```bash
-mvn clean compile
-```
-
-**Saída esperada:**
-```
-[INFO] BUILD SUCCESS
-[INFO] Total time: X s
-```
-
-### 3️⃣ Executar o Servidor
-
-**Opção A - Via Maven:**
-```bash
-mvn compile exec:java
-```
-
-**Opção B - Gerando JAR executável:**
-```bash
-mvn clean package
-java -jar target/shopping-cart-api-1.0-SNAPSHOT.jar
-```
-
-### 4️⃣ Verificar se Está Funcionando
-
-**No navegador, acesse:**
-```
-http://localhost:8080/health
-```
-
-**Resposta esperada:**
-```json
-{
-  "status": "OK",
-  "message": "API está funcionando!"
-}
-```
-
----
-
-## 📡 Endpoints da API
-
-### **Health Check**
-
-```http
-GET http://localhost:8080/health
-```
-
----
-
-### **Orders (Pedidos)**
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| `GET` | `/orders` | Listar todos os pedidos |
-| `GET` | `/orders/{id}` | Buscar pedido por ID |
-| `POST` | `/orders` | Criar novo pedido |
-| `PUT` | `/orders/{id}` | Atualizar pedido |
-| `DELETE` | `/orders/{id}` | Deletar pedido |
-
----
-
-### **Items (Itens do Pedido)**
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| `GET` | `/orders/{orderId}/items` | Listar itens de um pedido |
-| `POST` | `/orders/{orderId}/items` | Adicionar item ao pedido |
-| `DELETE` | `/items/{id}` | Deletar item |
-
----
-
-## 📝 Exemplos de Uso
-
-### ✅ 1. Criar um Pedido
-
-**Request:**
-```http
-POST http://localhost:8080/orders
-Content-Type: application/json
-
-{
-  "customerName": "João Silva"
-}
-```
-
-**Response:**
-```json
-{
-  "id": 1,
-  "customerName": "João Silva",
-  "totalValue": 0.0,
-  "status": "PENDING",
-  "items": [],
-  "createdAt": "2025-11-28T23:30:00"
-}
-```
-
----
-
-### ✅ 2. Adicionar Item ao Pedido
-
-**Request:**
-```http
-POST http://localhost:8080/orders/1/items
-Content-Type: application/json
-
-{
-  "product": "Notebook Dell",
-  "quantity": 1,
-  "unitPrice": 3500.00
-}
-```
-
-**Response:**
-```json
-{
-  "id": 1,
-  "orderId": 1,
-  "product": "Notebook Dell",
-  "quantity": 1,
-  "unitPrice": 3500.0,
-  "createdAt": "2025-11-28T23:31:00"
-}
-```
-
----
-
-### ✅ 3. Listar Todos os Pedidos
-
-**Request:**
-```http
-GET http://localhost:8080/orders
-```
-
-**Response:**
-```json
-[
-  {
-    "id": 1,
-    "customerName": "João Silva",
-    "totalValue": 3500.0,
-    "status": "PENDING",
-    "items": [
-      {
-        "id": 1,
-        "product": "Notebook Dell",
-        "quantity": 1,
-        "unitPrice": 3500.0
-      }
-    ],
-    "createdAt": "2025-11-28T23:30:00"
-  }
-]
-```
-
----
-
-### ✅ 4. Buscar Pedido por ID
-
-**Request:**
-```http
-GET http://localhost:8080/orders/1
-```
-
----
-
-### ✅ 5. Atualizar Status do Pedido
-
-**Request:**
-```http
-PUT http://localhost:8080/orders/1
-Content-Type: application/json
-
-{
-  "status": "CONFIRMED"
-}
-```
-
----
-
-### ✅ 6. Deletar Pedido
-
-**Request:**
-```http
-DELETE http://localhost:8080/orders/1
-```
-
-**Response:**
-```json
-{
-  "message": "Pedido deletado com sucesso"
-}
+    ├── model/                     # Entidades do domínio
+    │   ├── BaseEntity.java
+    │   ├── Order.java
+    │   └── OrderItem.java
+    │
+    └── database/                  # Conexão e estrutura do banco
+        └── DatabaseConnection.java
 ```
 
 ---
 
 ## 🗄️ Banco de Dados
 
-### **Tipo**: H2 Database (in-memory)
-### **URL**: `jdbc:h2:mem:shopping_cart`
-### **Usuário**: `sa`
-### **Senha**: *(vazia)*
+* **Tipo:** H2 Database (In-Memory)
+* **URL:** `jdbc:h2:mem:shopping_cart;DB_CLOSE_DELAY=-1`
+* **Usuário:** `sa`
+* **Senha:** *(vazia)*
 
-### **Tabelas Criadas Automaticamente:**
+As tabelas são criadas automaticamente ao iniciar a aplicação.
 
-#### `orders`
-```sql
-CREATE TABLE orders (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    customer_name VARCHAR(100) NOT NULL,
-    total_value DOUBLE NOT NULL DEFAULT 0.0,
-    status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
-    created_at TIMESTAMP NOT NULL
-);
-```
+---
 
-#### `order_items`
-```sql
-CREATE TABLE order_items (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    order_id BIGINT NOT NULL,
-    product VARCHAR(255) NOT NULL,
-    quantity INT NOT NULL,
-    unit_price DOUBLE NOT NULL DEFAULT 0.0,
-    created_at TIMESTAMP NOT NULL,
-    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
-);
+## 🚀 Como Executar o Projeto
+
+### 1️⃣ Clonar o repositório
+
+```bash
+git clone https://github.com/TiagoBernardoSantos/trabalho-semestral.git
+cd trabalho-semestral
 ```
 
 ---
 
-## 🧪 Testando a API
+### 2️⃣ Compilar o projeto
 
-### **Opção 1: Navegador**
-Acesse: `http://localhost:8080/health`
+```bash
+mvn clean compile
+```
 
-### **Opção 2: PowerShell (Windows)**
+---
+
+### 3️⃣ Executar a aplicação
+
+```bash
+mvn exec:java
+```
+
+---
+
+### 4️⃣ Servidor em execução
+
+Ao iniciar, a aplicação exibirá no terminal:
+
+```
+===========================================
+✅ Servidor iniciado com sucesso!
+📡 Rodando em: http://localhost:8080
+===========================================
+```
+
+---
+
+## 📡 Endpoints Disponíveis
+
+### 🔎 Health Check
+
+```
+GET http://localhost:8080/health
+```
+
+---
+
+### 📦 Pedidos (Orders)
+
+| Método | Endpoint     | Descrição              |
+| ------ | ------------ | ---------------------- |
+| GET    | /orders      | Lista todos os pedidos |
+| GET    | /orders/{id} | Busca pedido por ID    |
+| POST   | /orders      | Cria um novo pedido    |
+| PUT    | /orders/{id} | Atualiza um pedido     |
+| DELETE | /orders/{id} | Remove um pedido       |
+
+---
+
+### 🧾 Itens do Pedido (Order Items)
+
+| Método | Endpoint                | Descrição               |
+| ------ | ----------------------- | ----------------------- |
+| GET    | /orders/{orderId}/items | Lista itens do pedido   |
+| POST   | /orders/{orderId}/items | Adiciona item ao pedido |
+| DELETE | /items/{id}             | Remove um item          |
+
+---
+
+## 🧪 Testando a API (Sem Postman)
+
+### Opção 1️⃣ Navegador
+
+```
+http://localhost:8080/health
+```
+
+---
+
+### Opção 2️⃣ Terminal (Windows PowerShell)
 
 ```powershell
 # Health Check
 curl http://localhost:8080/health
 
 # Criar pedido
-curl -X POST http://localhost:8080/orders -H "Content-Type: application/json" -d '{\"customerName\": \"Maria Santos\"}'
+curl -X POST http://localhost:8080/orders -H "Content-Type: application/json" -d '{"customerName":"Maria Santos"}'
 
 # Listar pedidos
 curl http://localhost:8080/orders
 ```
 
-### **Opção 3: Postman (Recomendado)**
-
-1. Baixe: https://www.postman.com/downloads/
-2. Importe a collection ou crie requests manualmente
-3. Configure Base URL: `http://localhost:8080`
-4. Teste cada endpoint
-
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
-| Tecnologia | Versão | Propósito |
-|------------|--------|-----------|
-| Java (OpenJDK) | 21 | Linguagem principal |
-| Maven | 3.9+ | Gerenciamento de dependências |
-| H2 Database | 2.2.224 | Banco de dados embedded |
-| Gson | 2.10.1 | Serialização JSON |
-| HttpServer | JDK nativo | Servidor HTTP (sem frameworks) |
+| Tecnologia  | Descrição                   |
+| ----------- | --------------------------- |
+| Java 21     | Linguagem principal         |
+| Maven       | Build e dependências        |
+| H2 Database | Banco de dados embarcado    |
+| Gson        | Serialização JSON           |
+| HttpServer  | Servidor HTTP nativo do JDK |
+
+---
+
+## 📌 Observações Importantes
+
+* Projeto **não possui frontend** (conforme solicitado)
+* Persistência feita apenas via **API REST**
+* Código organizado seguindo boas práticas de separação de responsabilidades
+* Atende integralmente os requisitos do **Trabalho Semestral**
 
 ---
 
 ## 👨‍💻 Autor
 
-**Nome**: Tiago Bernardo Santos  
-**Curso**: Banco de Dados   
-**Instituição**: FATEC São José dos Campos - Prof. Jessen Vidal
+**Tiago Bernardo Santos**
+FATEC São José dos Campos – Prof. Jessen Vidal
 
 ---
 
-## 📄 Licença
-
-Este projeto foi desenvolvido para fins educacionais como parte do Trabalho Semestral da disciplina de Linguagem de Programação 2.
-
----
-
-**Última atualização**: 28/11/2025
+📅 **Última atualização:** 13/12/2025
