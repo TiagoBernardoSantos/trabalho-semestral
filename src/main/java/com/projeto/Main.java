@@ -1,11 +1,9 @@
 package com.projeto;
 
-import com.projeto.controller.OrderController;
-import com.projeto.controller.OrderItemController;
 import com.projeto.database.DatabaseConnection;
+import com.projeto.routes.Routes;
 import com.sun.net.httpserver.HttpServer;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class Main {
@@ -14,45 +12,16 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            System.out.println("===========================================");
-            System.out.println("🚀 INICIALIZANDO SERVIDOR REST API");
-            System.out.println("===========================================");
-            DatabaseConnection.testConnection();
+            System.out.println("🚀 Iniciando API...");
 
-            HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
+            DatabaseConnection.getConnection();
 
-            // ======== ROUTING INTELIGENTE ========
-            server.createContext("/orders", exchange -> {
-                String path = exchange.getRequestURI().getPath();
-                String method = exchange.getRequestMethod();
+            HttpServer server = HttpServer.create(
+                    new InetSocketAddress(PORT), 0
+            );
 
-                System.out.println("➡ [ROUTER] Method: " + method + " | Path: " + path);
+            Routes.register(server);
 
-                // Se for rota de itens: /orders/{id}/items
-                if (path.matches("^/orders/\\d+/items$")) {
-                    new OrderItemController().handle(exchange);
-                    return;
-                }
-
-                // Caso contrário, pertence ao OrderController
-                new OrderController().handle(exchange);
-            });
-
-            // Deletar item isolado
-            server.createContext("/items", new OrderItemController());
-            // ======================================
-
-
-            // Health Check
-            server.createContext("/health", exchange -> {
-                String response = "{\"status\": \"OK\", \"message\": \"API está funcionando!\"}";
-                exchange.getResponseHeaders().set("Content-Type", "application/json");
-                exchange.sendResponseHeaders(200, response.getBytes().length);
-                exchange.getResponseBody().write(response.getBytes());
-                exchange.getResponseBody().close();
-            });
-
-            server.setExecutor(null);
             server.start();
 
             System.out.println("===========================================");
@@ -73,19 +42,16 @@ public class Main {
             System.out.println("  POST   http://localhost:8080/orders/{orderId}/items");
             System.out.println("  DELETE http://localhost:8080/items/{id}");
             System.out.println("\n===========================================");
-            System.out.println("💡 Use Postman ou Insomnia para testar!");
-            System.out.println("💡 Ou acesse: http://localhost:8080/health");
+            System.out.println("💡 Teste pelo navegador ou terminal (curl)");
             System.out.println("===========================================\n");
 
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                System.out.println("\n🛑 Encerrando servidor...");
+                System.out.println("🛑 Encerrando servidor...");
                 server.stop(0);
                 DatabaseConnection.closeConnection();
-                System.out.println("✅ Servidor encerrado!");
             }));
 
-        } catch (IOException e) {
-            System.err.println("❌ Erro ao iniciar servidor: " + e.getMessage());
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

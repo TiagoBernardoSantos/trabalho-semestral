@@ -5,15 +5,14 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-
 public class DatabaseConnection {
-    
+
     private static final String URL = "jdbc:h2:mem:shopping_cart;DB_CLOSE_DELAY=-1";
     private static final String USER = "sa";
     private static final String PASSWORD = "";
-    
-    private static Connection connection = null;
-    
+
+    private static Connection connection;
+
     public static Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
             try {
@@ -27,10 +26,10 @@ public class DatabaseConnection {
         }
         return connection;
     }
-    
+
     private static void initializeDatabase() throws SQLException {
         try (Statement stmt = connection.createStatement()) {
-            
+
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS orders (
                     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -40,7 +39,6 @@ public class DatabaseConnection {
                     created_at TIMESTAMP NOT NULL
                 )
             """);
-            
 
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS order_items (
@@ -53,11 +51,10 @@ public class DatabaseConnection {
                     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
                 )
             """);
-            
-            System.out.println("✅ Tabelas criadas com sucesso!");
+
+            System.out.println("✅ Tabelas criadas/verificadas!");
         }
     }
-    
 
     public static void closeConnection() {
         try {
@@ -67,15 +64,6 @@ public class DatabaseConnection {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        }
-    }
-    
-    public static void testConnection() {
-        try {
-            Connection conn = getConnection();
-            System.out.println("🧪 Teste de conexão: " + !conn.isClosed());
-        } catch (SQLException e) {
-            System.err.println("❌ Erro ao testar conexão: " + e.getMessage());
         }
     }
 }
